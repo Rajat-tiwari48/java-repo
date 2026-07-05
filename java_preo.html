@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Infosys Java Full Stack + React — Interview Prep Tracker</title>
+<style>
+  :root{
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-2: #f0f2f5;
+    --border: #dde2e8;
+    --text: #1c2530;
+    --text-dim: #64707d;
+    --accent: #1f9d6e;
+    --accent-2: #d97706;
+    --danger: #d94848;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 20px 80px;}
+
+  header.top{
+    display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:20px;
+  }
+  .brand-line{font-family:var(--mono); color:var(--accent); font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;}
+  h1{margin:0; font-size:26px; font-weight:700; letter-spacing:-0.3px;}
+  h1 .dot{color:var(--accent-2);}
+  .subtitle{color:var(--text-dim); font-size:13.5px; margin-top:6px; max-width:640px; line-height:1.5;}
+
+  .stats{display:flex; gap:14px; flex-wrap:wrap;}
+  .stat-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:10px 16px; min-width:104px; text-align:center;
+  }
+  .stat-card .num{font-family:var(--mono); font-size:20px; font-weight:700; color:var(--accent);}
+  .stat-card .lbl{font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+
+  .progress-outer{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:999px; height:10px; overflow:hidden; margin:18px 0 26px;
+  }
+  .progress-inner{height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); width:0%; transition:width .4s ease;}
+
+  .controls{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:20px;
+  }
+  .controls input[type=text]{
+    flex:1; min-width:200px; background:var(--panel); border:1px solid var(--border); color:var(--text);
+    padding:10px 14px; border-radius:8px; font-size:13.5px; font-family:var(--sans);
+  }
+  .controls input[type=text]:focus{outline:none; border-color:var(--accent);}
+  select#filterStatus{
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    padding:10px 12px; border-radius:8px; font-size:13px;
+  }
+  .btn{
+    background:var(--panel); border:1px solid var(--border); color:var(--text-dim);
+    padding:9px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--accent); color:var(--text);}
+  .btn.danger:hover{border-color:var(--danger); color:var(--danger);}
+
+  .layout{display:grid; grid-template-columns:230px 1fr; gap:22px;}
+  @media (max-width:820px){ .layout{grid-template-columns:1fr;} }
+
+  nav.cats{
+    position:sticky; top:16px; align-self:start;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px;
+    max-height:80vh; overflow-y:auto;
+  }
+  nav.cats .cat-item{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-dim);
+    margin-bottom:2px;
+  }
+  nav.cats .cat-item:hover{background:var(--panel-2); color:var(--text);}
+  nav.cats .cat-item.active{background:var(--panel-2); color:var(--accent); font-weight:600;}
+  nav.cats .cat-count{font-family:var(--mono); font-size:11px; color:var(--text-dim);}
+
+  section.category-block{margin-bottom:34px;}
+  .cat-header{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:4px; padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .cat-header h2{font-size:17px; margin:0; color:var(--text);}
+  .cat-header .cat-sub{font-size:11.5px; color:var(--text-dim); font-family:var(--mono);}
+  .cat-header .cat-progress{margin-left:auto; font-family:var(--mono); font-size:11.5px; color:var(--accent);}
+
+  .qcard{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; margin-top:10px; display:flex; gap:14px; align-items:flex-start;
+    transition:border-color .15s;
+  }
+  .qcard.done{border-color:rgba(95,211,163,0.4); background:linear-gradient(180deg, rgba(95,211,163,0.05), transparent 40%), var(--panel);}
+  .qcard .qtext{flex:1; font-size:13.8px; line-height:1.5;}
+  .qcard .qtext .qnum{color:var(--text-dim); font-family:var(--mono); font-size:11.5px; margin-right:6px;}
+  .qcard textarea{
+    width:100%; margin-top:8px; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:8px 10px; font-size:12.5px; font-family:var(--sans); resize:vertical; min-height:34px;
+    display:none;
+  }
+  .qcard textarea.show{display:block;}
+  .note-toggle{font-size:11px; color:var(--text-dim); cursor:pointer; margin-top:6px; display:inline-block; text-decoration:underline dotted;}
+  .checks{display:flex; flex-direction:column; gap:6px; align-items:flex-end; min-width:118px;}
+  .chk{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); cursor:pointer; user-select:none;}
+  .chk input{accent-color:var(--accent); width:14px; height:14px; cursor:pointer;}
+  .chk.rev1 input{accent-color:var(--accent-2);}
+  .chk.rev2 input{accent-color:#7aa2ff;}
+
+  .roadmap{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:32px;
+  }
+  .roadmap h2{margin-top:0; font-size:18px;}
+  .roadmap .weeks{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:14px;}
+  .week{background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:14px;}
+  .week .wk-label{font-family:var(--mono); font-size:11px; color:var(--accent-2); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;}
+  .week ul{margin:0; padding-left:18px; font-size:12.5px; color:var(--text-dim); line-height:1.6;}
+  .bridge{margin-top:16px; padding:14px; background:var(--panel-2); border-left:3px solid var(--accent); border-radius:6px; font-size:13px; line-height:1.6; color:var(--text-dim);}
+  .bridge b{color:var(--text);}
+
+  footer{margin-top:40px; text-align:center; color:var(--text-dim); font-size:11.5px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand-line">// interview_prep.init()</div>
+      <h1>Infosys Full Stack Prep<span class="dot">.</span></h1>
+      <div class="subtitle">Java + Spring + React JS question bank compiled from Glassdoor, Naukri, GeeksforGeeks and candidate write-ups for the ~2–3 YOE Full Stack Developer round. Check off what you know, and tick two revision passes before the interview.</div>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="statTotal">0</div><div class="lbl">Questions</div></div>
+      <div class="stat-card"><div class="num" id="statDone">0</div><div class="lbl">Done</div></div>
+      <div class="stat-card"><div class="num" id="statRev1">0</div><div class="lbl">Rev 1</div></div>
+      <div class="stat-card"><div class="num" id="statRev2">0</div><div class="lbl">Rev 2</div></div>
+    </div>
+  </header>
+
+  <div class="progress-outer"><div class="progress-inner" id="progressBar"></div></div>
+
+  <div class="roadmap">
+    <h2>🗺 How to crack this — starting from zero Java/React background</h2>
+    <div class="bridge">
+      <b>JD fit check:</b> INFSYS-EXTERNAL-247862 lists just Core Java + React JS as primary skills — pretty generic Infosys template. Your resume already covers that and more (Spring Security, JWT, RBAC, WebSockets, FCM) — lead with those as differentiators. One thing to prep an answer for: the JD asks 2-3 YOE, your resume totals ~1.5 years — frame it around ownership/depth of what you built, not tenure length.
+    </div>
+    <div class="weeks">
+      <div class="week">
+        <div class="wk-label">Week 1 — Core Java & OOP</div>
+        <ul>
+          <li>OOP pillars, this/super, static vs instance</li>
+          <li>String pool, StringBuilder, immutability</li>
+          <li>Exception handling, custom exceptions</li>
+          <li>Collections: List/Set/Map internals, HashMap working</li>
+          <li>Java 8: Streams, Lambdas, Optional, functional interfaces</li>
+        </ul>
+      </div>
+      <div class="week">
+        <div class="wk-label">Week 2 — Spring Boot / REST / JPA</div>
+        <ul>
+          <li>Spring core: IoC, DI, bean scopes</li>
+          <li>Spring Boot annotations, @RestController, @Service</li>
+          <li>Building REST APIs (GET/POST/PUT/DELETE), status codes</li>
+          <li>Spring Data JPA / Hibernate mappings, @OneToMany etc.</li>
+          <li>Exception handling in REST (@ControllerAdvice), validation</li>
+        </ul>
+      </div>
+      <div class="week">
+        <div class="wk-label">Week 3 — React JS</div>
+        <ul>
+          <li>JSX, components, props vs state</li>
+          <li>Hooks: useState, useEffect, useContext, useMemo</li>
+          <li>Lifecycle (class) vs hooks (functional) mapping</li>
+          <li>Calling REST APIs with fetch/axios, loading/error states</li>
+          <li>Basic Redux or Context API state management</li>
+        </ul>
+      </div>
+      <div class="week">
+        <div class="wk-label">Week 4 — Integration & Mock Rounds</div>
+        <ul>
+          <li>SQL joins, indexing, normalization basics</li>
+          <li>Microservices basics: what/why, REST vs messaging</li>
+          <li>Rebuild 1–2 small full stack CRUD apps end-to-end</li>
+          <li>Prepare 2–3 STAR-format project stories from your Zoho work</li>
+          <li>Two full revision passes through this tracker (use Rev1/Rev2)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchBox" placeholder="Search questions… e.g. 'hashmap', 'useEffect', 'joins'">
+    <select id="filterStatus">
+      <option value="all">All questions</option>
+      <option value="notdone">Not started</option>
+      <option value="done">Marked done</option>
+      <option value="rev1">Needs Revision 1</option>
+      <option value="rev2">Needs Revision 2</option>
+      <option value="mastered">Fully revised (done+rev1+rev2)</option>
+    </select>
+    <button class="btn" id="expandAll">Expand notes</button>
+    <button class="btn" id="exportBtn">Export progress</button>
+    <button class="btn danger" id="resetAll">Reset progress</button>
+  </div>
+
+  <div class="layout">
+    <nav class="cats" id="catNav"></nav>
+    <div id="categoriesWrap"></div>
+  </div>
+
+  <footer>saved locally to your account · progress auto-syncs as you check boxes</footer>
+</div>
+
+<script>
+const DATA = [
+{cat:"Core Java & OOP", items:[
+"Explain the four pillars of OOP with a real example from your own project.",
+"Difference between method overloading and overriding, with a code snippet.",
+"What is the difference between an abstract class and an interface? When would you choose one over the other?",
+"What are access modifiers in Java, and how does default (package-private) access work?",
+"Explain the difference between == and .equals() for objects, and why hashCode() and equals() must be overridden together.",
+"What is the difference between final, finally, and finalize()?",
+"What is constructor chaining and how does this()/super() work?",
+"Explain static vs instance variables/methods with a scenario where static would misbehave.",
+"What is the Java memory model — difference between stack and heap memory?",
+"How does garbage collection work in Java? Name the GC types you know.",
+"What is the difference between checked and unchecked exceptions? Give examples of each.",
+"How would you create and throw a custom exception in a Spring Boot service?",
+"What is the difference between String, StringBuilder, and StringBuffer, and why is String immutable?",
+"Explain the Java String pool and what happens with 'new String(\"abc\")' vs a literal.",
+"What are wrapper classes and autoboxing/unboxing? Where can this cause bugs (e.g., NullPointerException)?",
+"What is the difference between composition and inheritance? Which is generally preferred and why?",
+"Explain the singleton design pattern and at least two ways to implement it safely in multithreaded code.",
+"Have you used the Builder, Factory, or Strategy design patterns? Describe a scenario.",
+"What is the difference between an interface with default methods and an abstract class (post Java 8)?",
+"What happens if you don't override toString() — and why is overriding it useful for debugging?"
+]},
+{cat:"Java 8+ Features", items:[
+"What are the major features introduced in Java 8?",
+"Explain lambda expressions with a simple example replacing an anonymous class.",
+"What is a functional interface? Name a few built-in ones (Function, Predicate, Supplier, Consumer).",
+"What are Streams in Java? Write a stream pipeline to filter and collect a list.",
+"Difference between map() and flatMap() in Streams.",
+"What is the Optional class, and how does it help avoid NullPointerException?",
+"Explain method references (::) and give an example.",
+"What is the difference between intermediate and terminal operations in Streams?",
+"How do you sort a list of objects using Comparator with lambda/method reference?",
+"What is the new Date and Time API (java.time) and why did it replace java.util.Date?",
+"What are default and static methods in interfaces, and why were they introduced?",
+"How would you group a list of objects by a field using Collectors.groupingBy()?",
+"Explain parallel streams — when are they useful and when can they hurt performance?",
+"What is the difference between Collectors.toList() and Collectors.toSet()?",
+"Write a one-liner using streams to find duplicates or the maximum value in a list."
+]},
+{cat:"Collections & Multithreading", items:[
+"Explain the Collection framework hierarchy (List, Set, Map, Queue).",
+"How does HashMap work internally? Explain hashing, buckets, and collision handling.",
+"Difference between HashMap, LinkedHashMap, and TreeMap.",
+"Difference between ArrayList and LinkedList — time complexity for insert/search/delete.",
+"What is the difference between HashSet, LinkedHashSet, and TreeSet?",
+"What is the difference between Comparable and Comparator?",
+"How is ConcurrentHashMap different from a synchronized HashMap?",
+"What is the difference between fail-fast and fail-safe iterators?",
+"Explain the difference between synchronized methods, synchronized blocks, and the volatile keyword.",
+"What is a thread in Java, and what are the ways to create one (Thread vs Runnable vs Callable)?",
+"Explain the life cycle of a thread in Java.",
+"What is a deadlock, and how would you avoid it?",
+"What is the Executor framework, and why is it preferred over manually creating threads?",
+"What is the difference between wait()/notify() and sleep()?",
+"Have you used CompletableFuture? What problem does it solve?"
+]},
+{cat:"Spring Core & Spring Boot", items:[
+"What is Dependency Injection, and what problem does it solve? Constructor vs setter injection.",
+"What is Inversion of Control (IoC), and how does the Spring container implement it?",
+"What are Spring Bean scopes (singleton, prototype, request, session)?",
+"Explain @Component, @Service, @Repository, @Controller — are they functionally different?",
+"What is @Autowired, and how does Spring resolve ambiguity when multiple beans of the same type exist (@Qualifier/@Primary)?",
+"What is @SpringBootApplication actually doing under the hood?",
+"What is Spring Boot auto-configuration, and how can you exclude a specific auto-configuration?",
+"What is application.properties/application.yml used for, and how do you manage different configs per environment (profiles)?",
+"What is the Spring Bean lifecycle (@PostConstruct, @PreDestroy, InitializingBean)?",
+"What is AOP (Aspect Oriented Programming) in Spring, and where have you used or would use it (e.g., logging, transactions)?",
+"How does Spring Boot Actuator help in monitoring an application in production?",
+"What is a Spring Boot starter, and how do starters simplify dependency management?",
+"Explain circular dependency in Spring — how would you detect and fix it?",
+"How do you handle configuration properties using @ConfigurationProperties vs @Value?",
+"What is the difference between Spring, Spring MVC, and Spring Boot?"
+]},
+{cat:"REST API & Spring MVC", items:[
+"How do you design a RESTful API — what makes an API RESTful?",
+"Explain the difference between @RestController and @Controller.",
+"What is the purpose of @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping?",
+"Difference between @PathVariable and @RequestParam.",
+"How do you return proper HTTP status codes from a Spring Boot controller (ResponseEntity)?",
+"How do you handle global exception handling in a REST API (@ControllerAdvice, @ExceptionHandler)?",
+"What is @RequestBody and @ResponseBody used for?",
+"How would you validate incoming request payloads (Bean Validation / @Valid, @NotNull, custom validators)?",
+"What is idempotency in REST APIs — which HTTP methods are idempotent?",
+"How do you version a REST API (URI versioning vs header versioning)?",
+"What is CORS, and how did you configure/resolve a CORS issue between a React frontend and Spring backend?",
+"How do you implement pagination and sorting in a REST API?",
+"What is the difference between PUT and PATCH?",
+"How do you secure a REST API — have you used JWT or OAuth2 / Spring Security?",
+"What is a DTO, and why shouldn't you expose your JPA entity directly in an API response?",
+"How would you call one microservice's REST API from another (RestTemplate vs WebClient vs Feign)?",
+"How do you test a REST controller (unit test with MockMvc, or Postman-based manual testing)?"
+]},
+{cat:"Hibernate / JPA", items:[
+"What is the difference between JPA and Hibernate?",
+"What is the difference between get() and load() in Hibernate?",
+"Explain the Hibernate first-level and second-level cache.",
+"What is lazy loading vs eager loading, and where have you hit a LazyInitializationException?",
+"Explain @OneToMany, @ManyToOne, @ManyToMany with mappedBy usage.",
+"What is the N+1 select problem, and how do you fix it?",
+"Difference between save(), saveOrUpdate(), and persist() in Hibernate.",
+"What is the purpose of @Transactional, and what happens if you call a @Transactional method from within the same class?",
+"How does Hibernate generate primary keys (GenerationType.IDENTITY vs SEQUENCE vs AUTO)?",
+"What is a Hibernate entity's lifecycle (transient, persistent, detached, removed)?",
+"How do you write a custom query using JPQL or native SQL in Spring Data JPA?",
+"What is the difference between JpaRepository, CrudRepository, and PagingAndSortingRepository?"
+]},
+{cat:"SQL & Database", items:[
+"Difference between INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN — with examples.",
+"Write a query to find the second highest salary from an Employee table.",
+"Difference between WHERE and HAVING clauses.",
+"What is normalization? Explain 1NF, 2NF, 3NF briefly.",
+"What is an index, and how does it improve query performance? What is a downside of too many indexes?",
+"Difference between primary key, unique key, and foreign key constraints.",
+"What is a stored procedure, and have you written one?",
+"Difference between DELETE, TRUNCATE, and DROP.",
+"What is a self-join, and give a real scenario where you'd use one.",
+"What is ACID in the context of database transactions?",
+"How would you find duplicate rows in a table using SQL?",
+"Explain GROUP BY with aggregate functions and a HAVING filter, with an example query."
+]},
+{cat:"Microservices & System Design Basics", items:[
+"What are microservices, and how are they different from a monolithic architecture?",
+"What is service discovery, and why is it needed in a microservices setup?",
+"What is an API Gateway, and what problems does it solve?",
+"How do microservices communicate with each other (REST, messaging queues like Kafka/RabbitMQ)?",
+"What is the Circuit Breaker pattern (e.g., Resilience4j/Hystrix), and why is it needed?",
+"How do you handle distributed transactions across microservices (Saga pattern basics)?",
+"What is containerization, and how have you used or would use Docker with a Spring Boot app?",
+"How would you design a simple URL shortener or a basic e-commerce order system at a high level?",
+"What is caching, and where would you introduce a cache (Redis) in a typical full stack app?",
+"What is the difference between horizontal and vertical scaling?"
+]},
+{cat:"React JS Fundamentals", items:[
+"What is JSX, and how is it different from plain JavaScript/HTML?",
+"What is the difference between a functional component and a class component?",
+"Explain props vs state — how do they differ and when do you use each?",
+"What is the Virtual DOM, and how does React's reconciliation/diffing algorithm improve performance?",
+"What is the component lifecycle in class components (componentDidMount, componentDidUpdate, componentWillUnmount)?",
+"How do you pass data from a child component back to a parent component?",
+"What are controlled vs uncontrolled components in React forms?",
+"What is 'key' prop used for when rendering lists, and what happens if you use array index as key incorrectly?",
+"What is prop drilling, and how can it be avoided?",
+"What is the difference between React.Fragment and returning multiple elements directly?",
+"How do you conditionally render JSX (ternary, &&, early return)?",
+"What is the difference between a presentational (dumb) component and a container (smart) component?",
+"How would you style components in React (CSS modules, styled-components, inline styles) — pros/cons?"
+]},
+{cat:"React Hooks & State Management", items:[
+"What are React Hooks, and why were they introduced (compared to class components)?",
+"Explain useState with an example, including the functional update form (prevState => ...).",
+"Explain useEffect — what does the dependency array control, and how do you clean up a side effect?",
+"How do you replicate componentDidMount, componentDidUpdate, and componentWillUnmount using useEffect?",
+"What is useContext, and how does it help avoid prop drilling?",
+"What is useMemo vs useCallback, and when would you actually need them for performance?",
+"What is useRef used for, besides accessing DOM elements?",
+"Have you written a custom hook? Describe one you built (e.g., useFetch, useDebounce).",
+"What is the Rules of Hooks, and why can't hooks be called conditionally or inside loops?",
+"What is Redux, and what problem does it solve compared to local component state?",
+"Explain the Redux data flow: actions, reducers, store, dispatch.",
+"What is the Context API, and when would you choose it over Redux for state management?",
+"How do you call a REST API in React and manage loading/error/success states (fetch or axios)?",
+"What is debouncing, and how would you implement it for a search input calling an API?",
+"How do you handle route-based navigation in a React app (React Router basics)?",
+"What is code-splitting and lazy loading in React (React.lazy, Suspense), and why does it matter for performance?"
+]},
+{cat:"JavaScript / ES6 Essentials", items:[
+"What is the difference between var, let, and const, including scoping rules?",
+"Explain closures in JavaScript with a practical example.",
+"What is the difference between == and === in JavaScript?",
+"Explain 'this' keyword behavior in regular functions vs arrow functions.",
+"What is event bubbling and event delegation?",
+"What is a Promise, and how does async/await simplify working with Promises?",
+"Difference between synchronous and asynchronous code, and how the JS event loop works at a basic level.",
+"What is destructuring, and how is it used with objects/arrays and function parameters?",
+"What is the spread operator vs the rest operator?",
+"What is the difference between map(), filter(), and reduce() on arrays?",
+"What is hoisting in JavaScript?",
+"Explain shallow copy vs deep copy of objects/arrays.",
+"What is debouncing vs throttling, and when would you use each?"
+]},
+{cat:"HTML/CSS Basics", items:[
+"What is the difference between block, inline, and inline-block elements?",
+"Explain the CSS box model.",
+"Difference between Flexbox and CSS Grid — when would you use each?",
+"What is the difference between position: relative, absolute, fixed, and sticky?",
+"What is responsive design, and how do media queries work?",
+"What is CSS specificity, and how is it calculated?",
+"What are semantic HTML tags, and why do they matter?"
+]},
+{cat:"Your Project Deep-Dive (from your resume)", items:[
+"Walk me through the ERP application at Nexivo end-to-end — what modules did YOU build, and how do frontend, backend and DB talk to each other?",
+"You built RBAC (Role-Based Access Control) — explain how you modeled roles/permissions in the DB and enforced them in Spring Security (filters/annotations like @PreAuthorize).",
+"Explain your JWT authentication flow in detail: token generation, where it's stored client-side, how it's validated on each request, and how you handle expiry/refresh.",
+"You implemented OTP verification at SejiTech — walk through the flow: OTP generation, storage (with expiry), delivery, and validation on the backend.",
+"Explain your multipart file upload API — how do you handle large files, validate file types, and store them securely on a VPS?",
+"Walk through your Firebase Cloud Messaging (FCM) integration — how does a backend event trigger a push notification, and how is it received when the app is closed/backgrounded?",
+"Explain the WebSocket-based real-time chat feature you built at SejiTech — how is the connection established, and how do messages get delivered instantly to the right user?",
+"Describe the 'Follow-Up' module you built — how are reminders scheduled and triggered (cron/scheduler), and how did you design the data model for pending tasks?",
+"What was the hardest bug you had to debug across these two roles, and how did you isolate the root cause?",
+"If the interviewer says '2-3 years experience required but your resume shows ~1.5 years' — how would you respond confidently?",
+"Which of your two companies' tech stacks (Nexivo vs SejiTech) was closer to what Infosys is asking for here, and why?",
+"Between your React.js (web) work and React Native (mobile) work, what were the biggest differences you had to account for?"
+]},
+{cat:"Project, Behavioral & HR", items:[
+"Walk me through your current project architecture end-to-end, including frontend, backend, and database.",
+"Describe a time you had to learn a new technology quickly for a project deliverable.",
+"How do you handle a situation where requirements changed midway through a project?",
+"Tell me about a time you optimized performance of a slow API or a slow batch job.",
+"Why do you want to move to Infosys, and why this Java Fullstack role specifically?",
+"How do you approach code reviews and ensure code quality in a team?",
+"Describe your role in a client-facing project and how you managed expectations.",
+"Where do you see yourself in the next 3-5 years?",
+"Do you have any questions for us? (prepare 2-3 thoughtful questions about the team/project)"
+]}
+];
+
+// ---------- build flat question list with ids ----------
+let ALL = [];
+DATA.forEach((cat, ci) => {
+  cat.items.forEach((text, qi) => {
+    ALL.push({ id: `${ci}_${qi}`, cat: cat.cat, catIndex: ci, text });
+  });
+});
+
+let progress = {}; // id -> {done, rev1, rev2, note}
+let currentFilter = "all";
+let currentSearch = "";
+let activeCat = "all";
+
+const STORAGE_KEY = "infosys-prep:progress-v1";
+
+async function loadProgress(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){ progress = JSON.parse(res.value); }
+  }catch(e){ /* no data yet */ }
+  render();
+}
+
+let saveTimer = null;
+function saveProgress(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(progress), false); }
+    catch(e){ console.error("save failed", e); }
+  }, 250);
+}
+
+function getP(id){
+  return progress[id] || { done:false, rev1:false, rev2:false, note:"" };
+}
+function setP(id, patch){
+  progress[id] = { ...getP(id), ...patch };
+  saveProgress();
+}
+
+function buildNav(){
+  const nav = document.getElementById("catNav");
+  let html = `<div class="cat-item ${activeCat==='all'?'active':''}" data-cat="all"><span>All categories</span><span class="cat-count">${ALL.length}</span></div>`;
+  DATA.forEach((cat, ci) => {
+    html += `<div class="cat-item ${activeCat==ci?'active':''}" data-cat="${ci}"><span>${cat.cat}</span><span class="cat-count">${cat.items.length}</span></div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll(".cat-item").forEach(el => {
+    el.addEventListener("click", () => {
+      activeCat = el.dataset.cat === "all" ? "all" : Number(el.dataset.cat);
+      render();
+    });
+  });
+}
+
+function matchesFilter(id){
+  const p = getP(id);
+  switch(currentFilter){
+    case "done": return p.done;
+    case "notdone": return !p.done;
+    case "rev1": return p.done && !p.rev1;
+    case "rev2": return p.done && p.rev1 && !p.rev2;
+    case "mastered": return p.done && p.rev1 && p.rev2;
+    default: return true;
+  }
+}
+
+function render(){
+  buildNav();
+  const wrap = document.getElementById("categoriesWrap");
+  wrap.innerHTML = "";
+  const search = currentSearch.trim().toLowerCase();
+
+  DATA.forEach((cat, ci) => {
+    if(activeCat !== "all" && activeCat !== ci) return;
+
+    const catItems = ALL.filter(q => q.catIndex === ci)
+      .filter(q => matchesFilter(q.id))
+      .filter(q => !search || q.text.toLowerCase().includes(search));
+
+    if(catItems.length === 0) return;
+
+    const totalInCat = ALL.filter(q => q.catIndex === ci).length;
+    const doneInCat = ALL.filter(q => q.catIndex === ci && getP(q.id).done).length;
+
+    const section = document.createElement("section");
+    section.className = "category-block";
+    section.innerHTML = `
+      <div class="cat-header">
+        <h2>${cat.cat}</h2>
+        <span class="cat-sub">${catItems.length} shown</span>
+        <span class="cat-progress">${doneInCat}/${totalInCat} done</span>
+      </div>
+    `;
+
+    catItems.forEach(q => {
+      const p = getP(q.id);
+      const card = document.createElement("div");
+      card.className = "qcard" + (p.done ? " done" : "");
+      card.innerHTML = `
+        <div class="qtext">
+          <span class="qnum">${q.id}</span>${escapeHtml(q.text)}
+          <div class="note-toggle" data-id="${q.id}">+ add note</div>
+          <textarea class="notearea" data-id="${q.id}" placeholder="Jot your own short answer / gotcha here...">${p.note || ""}</textarea>
+        </div>
+        <div class="checks">
+          <label class="chk done"><input type="checkbox" data-id="${q.id}" data-field="done" ${p.done?"checked":""}> Done</label>
+          <label class="chk rev1"><input type="checkbox" data-id="${q.id}" data-field="rev1" ${p.rev1?"checked":""}> Revision 1</label>
+          <label class="chk rev2"><input type="checkbox" data-id="${q.id}" data-field="rev2" ${p.rev2?"checked":""}> Revision 2</label>
+        </div>
+      `;
+      section.appendChild(card);
+    });
+
+    wrap.appendChild(section);
+  });
+
+  if(wrap.innerHTML === ""){
+    wrap.innerHTML = `<div style="color:var(--text-dim); padding:40px; text-align:center; font-size:13.5px;">No questions match your filters.</div>`;
+  }
+
+  attachHandlers();
+  updateStats();
+}
+
+function attachHandlers(){
+  document.querySelectorAll('input[type=checkbox][data-field]').forEach(cb => {
+    cb.addEventListener("change", () => {
+      const id = cb.dataset.id;
+      const field = cb.dataset.field;
+      const patch = {};
+      patch[field] = cb.checked;
+      // if unchecking "done", also uncheck rev1/rev2 for consistency
+      if(field === "done" && !cb.checked){ patch.rev1 = false; patch.rev2 = false; }
+      // can't check rev1 without done
+      if((field === "rev1" || field === "rev2") && cb.checked){ patch.done = true; }
+      setP(id, patch);
+      render();
+    });
+  });
+
+  document.querySelectorAll(".note-toggle").forEach(t => {
+    t.addEventListener("click", () => {
+      const id = t.dataset.id;
+      const area = document.querySelector(`textarea[data-id="${id}"]`);
+      area.classList.toggle("show");
+    });
+  });
+
+  document.querySelectorAll("textarea.notearea").forEach(area => {
+    area.addEventListener("input", () => {
+      setP(area.dataset.id, { note: area.value });
+    });
+  });
+}
+
+function updateStats(){
+  const total = ALL.length;
+  const done = ALL.filter(q => getP(q.id).done).length;
+  const rev1 = ALL.filter(q => getP(q.id).rev1).length;
+  const rev2 = ALL.filter(q => getP(q.id).rev2).length;
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statDone").textContent = done;
+  document.getElementById("statRev1").textContent = rev1;
+  document.getElementById("statRev2").textContent = rev2;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById("progressBar").style.width = pct + "%";
+}
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+document.getElementById("searchBox").addEventListener("input", (e) => {
+  currentSearch = e.target.value;
+  render();
+});
+document.getElementById("filterStatus").addEventListener("change", (e) => {
+  currentFilter = e.target.value;
+  render();
+});
+document.getElementById("expandAll").addEventListener("click", () => {
+  document.querySelectorAll("textarea.notearea").forEach(a => a.classList.add("show"));
+});
+document.getElementById("resetAll").addEventListener("click", async () => {
+  if(!confirm("Reset all progress? This clears every Done/Revision checkbox and note.")) return;
+  progress = {};
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(progress), false); }catch(e){}
+  render();
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const rows = [["Category","Question","Done","Revision 1","Revision 2","My Notes"]];
+  ALL.forEach(q => {
+    const p = getP(q.id);
+    rows.push([
+      q.cat,
+      q.text,
+      p.done ? "Yes" : "No",
+      p.rev1 ? "Yes" : "No",
+      p.rev2 ? "Yes" : "No",
+      (p.note || "").replace(/\r?\n/g, " ")
+    ]);
+  });
+  const csv = rows.map(r =>
+    r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+  ).join("\r\n");
+
+  const total = ALL.length;
+  const done = ALL.filter(q => getP(q.id).done).length;
+  const rev1 = ALL.filter(q => getP(q.id).rev1).length;
+  const rev2 = ALL.filter(q => getP(q.id).rev2).length;
+  const summary = `Infosys Java Fullstack Prep Export\nDate: ${new Date().toLocaleString()}\nTotal: ${total} | Done: ${done} | Revision 1: ${rev1} | Revision 2: ${rev2}\n\n`;
+
+  const blob = new Blob([summary + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `infosys-prep-progress-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+loadProgress();
+</script>
+</body>
+</html>
