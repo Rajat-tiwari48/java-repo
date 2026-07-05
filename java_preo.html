@@ -450,10 +450,31 @@ let activeCat = "all";
 
 const STORAGE_KEY = "infosys-prep:progress-v1";
 
+const storageAdapter = {
+  async get(key){
+    try{
+      if(window.storage && typeof window.storage.get === "function"){
+        const res = await window.storage.get(key, false);
+        return res && typeof res.value === "string" ? res.value : null;
+      }
+    }catch(e){}
+    return localStorage.getItem(key);
+  },
+  async set(key, value){
+    try{
+      if(window.storage && typeof window.storage.set === "function"){
+        await window.storage.set(key, value, false);
+        return;
+      }
+    }catch(e){}
+    localStorage.setItem(key, value);
+  }
+};
+
 async function loadProgress(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    if(res && res.value){ progress = JSON.parse(res.value); }
+    const saved = await storageAdapter.get(STORAGE_KEY);
+    if(saved){ progress = JSON.parse(saved); }
   }catch(e){ /* no data yet */ }
   render();
 }
@@ -462,7 +483,7 @@ let saveTimer = null;
 function saveProgress(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
-    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(progress), false); }
+    try{ await storageAdapter.set(STORAGE_KEY, JSON.stringify(progress)); }
     catch(e){ console.error("save failed", e); }
   }, 250);
 }
@@ -622,7 +643,7 @@ document.getElementById("expandAll").addEventListener("click", () => {
 document.getElementById("resetAll").addEventListener("click", async () => {
   if(!confirm("Reset all progress? This clears every Done/Revision checkbox and note.")) return;
   progress = {};
-  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(progress), false); }catch(e){}
+  try{ await storageAdapter.set(STORAGE_KEY, JSON.stringify(progress)); }catch(e){}
   render();
 });
 
