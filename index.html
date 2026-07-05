@@ -453,9 +453,21 @@ const STORAGE_KEY = "infosys-prep:progress-v1";
 
 const storageAdapter = {
   async get(key){
+    try{
+      if(window.storage && typeof window.storage.get === "function"){
+        const res = await window.storage.get(key, false);
+        return res && typeof res.value === "string" ? res.value : null;
+      }
+    }catch(e){}
     return localStorage.getItem(key);
   },
   async set(key, value){
+    try{
+      if(window.storage && typeof window.storage.set === "function"){
+        await window.storage.set(key, value, false);
+        return;
+      }
+    }catch(e){}
     localStorage.setItem(key, value);
   }
 };
